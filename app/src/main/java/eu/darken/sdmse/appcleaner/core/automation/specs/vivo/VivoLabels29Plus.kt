@@ -1,8 +1,8 @@
 package eu.darken.sdmse.appcleaner.core.automation.specs.vivo
 
 import dagger.Reusable
-import eu.darken.sdmse.appcleaner.core.automation.specs.aosp.AOSPLabels14Plus
-import eu.darken.sdmse.appcleaner.core.automation.specs.aosp.AOSPLabels29Plus
+import eu.darken.sdmse.appcontrol.core.automation.specs.aosp.AOSPLabels14Plus
+import eu.darken.sdmse.appcontrol.core.automation.specs.aosp.AOSPLabels29Plus
 import eu.darken.sdmse.automation.core.common.AutomationLabelSource
 import eu.darken.sdmse.common.debug.logging.logTag
 import javax.inject.Inject

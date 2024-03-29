@@ -18,4 +18,6 @@ sealed class AppControlListEvents {
         val successful: Collection<AppExporter.Result>,
         val failed: Collection<Installed.InstallId>,
     ) : AppControlListEvents()
+
+    data class ConfirmForceStop(val items: List<AppControlListAdapter.Item>) : AppControlListEvents()
 }

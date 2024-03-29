@@ -8,6 +8,8 @@ import dagger.multibindings.IntoSet
 import eu.darken.sdmse.R
 import eu.darken.sdmse.appcontrol.core.export.AppExportTask
 import eu.darken.sdmse.appcontrol.core.export.AppExporter
+import eu.darken.sdmse.appcontrol.core.forcestop.ForceStopTask
+import eu.darken.sdmse.appcontrol.core.forcestop.ForceStopper
 import eu.darken.sdmse.appcontrol.core.toggle.AppControlToggleTask
 import eu.darken.sdmse.appcontrol.core.toggle.ComponentToggler
 import eu.darken.sdmse.appcontrol.core.uninstall.UninstallTask
@@ -57,6 +59,7 @@ class AppControl @Inject constructor(
     private val pkgRepo: PkgRepo,
     private val userManager: UserManager2,
     private val componentToggler: ComponentToggler,
+    private val forceStopper: ForceStopper,
     private val uninstaller: Uninstaller,
     private val pkgOps: PkgOps,
     usageStatsSetupModule: UsageStatsSetupModule,
@@ -111,6 +114,7 @@ class AppControl @Inject constructor(
                 is AppControlToggleTask -> performToggle(task)
                 is UninstallTask -> performUninstall(task)
                 is AppExportTask -> performExportSave(task)
+                is ForceStopTask -> performForceStop(task)
                 else -> throw UnsupportedOperationException("Unsupported task: $task")
             }
 
@@ -283,6 +287,57 @@ class AppControl @Inject constructor(
             success = exportResults.toSet(),
             failed = emptySet(),
         )
+    }
+
+
+    private suspend fun performForceStop(task: ForceStopTask): ForceStopTask.Result {
+        log(TAG) { "performForceStop(): $task" }
+        val snapshot = internalData.value ?: throw IllegalStateException("App data wasn't loaded")
+
+        val successful = mutableSetOf<Installed.InstallId>()
+        val failed = mutableSetOf<Installed.InstallId>()
+        updateProgressCount(Progress.Count.Percent(task.targets.size))
+
+        forceStopper.useRes {
+            task.targets.forEach { targetId ->
+                val target = snapshot.apps.single { it.installId == targetId }
+                log(TAG) { "Force stopping $targetId " }
+
+                updateProgressPrimary(eu.darken.sdmse.common.R.string.general_progress_processing_x, target.label)
+
+                try {
+                    forceStopper.forceStop(target.installId)
+                    successful.add(targetId)
+                    log(TAG, INFO) { "State successfully force stopped $target" }
+                } catch (e: Exception) {
+                    log(TAG, ERROR) { "Failed to foce stop $targetId: ${e.asLog()}" }
+                    failed.add(targetId)
+                } finally {
+                    increaseProgress()
+                }
+            }
+        }
+
+        updateProgressPrimary(eu.darken.sdmse.common.R.string.general_progress_loading_app_data)
+        updateProgressSecondary(CaString.EMPTY)
+        updateProgressCount(Progress.Count.Indeterminate())
+
+        val refreshed = pkgRepo.refresh()
+
+        internalData.value = snapshot.copy(
+            apps = snapshot.apps.map { app ->
+                when {
+                    successful.contains(app.installId) || failed.contains(app.installId) -> {
+                        // TODO if the app is suddenly no longer installed, show the user an error?
+                        refreshed.filter { it.id == app.id }.map { it.toAppInfo() }
+                    }
+
+                    else -> setOf(app)
+                }
+            }.flatten()
+        )
+
+        return ForceStopTask.Result(successful, failed)
     }
 
     private suspend fun Installed.toAppInfo(): AppInfo {

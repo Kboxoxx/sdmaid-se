@@ -6,11 +6,11 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.squareup.moshi.Moshi
 import dagger.hilt.android.qualifiers.ApplicationContext
-import eu.darken.sdmse.appcleaner.core.automation.specs.SpecRomType
 import eu.darken.sdmse.common.datastore.PreferenceScreenData
 import eu.darken.sdmse.common.datastore.PreferenceStoreMapper
 import eu.darken.sdmse.common.datastore.createValue
 import eu.darken.sdmse.common.debug.logging.logTag
+import eu.darken.sdmse.common.device.RomType
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -59,7 +59,7 @@ class AppCleanerSettings @Inject constructor(
     // Amounts to common folders created by default
     val minCacheSizeBytes = dataStore.createValue<Long>("skip.mincachesize.bytes", MIN_CACHE_SIZE_DEFAULT)
 
-    val romTypeDetection = dataStore.createValue("automation.romtype.detection", SpecRomType.AUTO, moshi)
+    val romTypeDetection = dataStore.createValue("automation.romtype.detection", RomType.AUTO, moshi)
 
     override val mapper = PreferenceStoreMapper(
         includeSystemAppsEnabled,

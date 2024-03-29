@@ -1,14 +1,15 @@
-package eu.darken.sdmse.appcleaner.core.automation.specs
+package eu.darken.sdmse.common.device
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import eu.darken.sdmse.R
+import eu.darken.sdmse.common.R
 import eu.darken.sdmse.common.ca.CaString
 import eu.darken.sdmse.common.ca.toCaString
 import eu.darken.sdmse.common.preferences.EnumPreference
 
 @JsonClass(generateAdapter = false)
-enum class SpecRomType(override val label: CaString) : EnumPreference<SpecRomType> {
+enum class RomType(override val label: CaString) : EnumPreference<RomType> {
     @Json(name = "AUTO") AUTO(R.string.appcleaner_automation_romtype_auto_label.toCaString()),
     @Json(name = "ALCATEL") ALCATEL("Alcatel".toCaString()),
     @Json(name = "ANDROID_TV") ANDROID_TV("AndroidTV".toCaString()),

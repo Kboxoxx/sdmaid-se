@@ -8,8 +8,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
 import eu.darken.sdmse.appcleaner.core.AppCleanerSettings
+import eu.darken.sdmse.appcleaner.core.automation.specs.AppCleanerSpecGenerator
 import eu.darken.sdmse.appcleaner.core.automation.specs.OnTheFlyLabler
-import eu.darken.sdmse.appcleaner.core.automation.specs.SpecRomType
 import eu.darken.sdmse.automation.core.common.StepProcessor
 import eu.darken.sdmse.automation.core.common.clickableParent
 import eu.darken.sdmse.automation.core.common.crawl
@@ -25,15 +25,13 @@ import eu.darken.sdmse.automation.core.common.windowCriteria
 import eu.darken.sdmse.automation.core.common.windowCriteriaAppIdentifier
 import eu.darken.sdmse.automation.core.specs.AutomationExplorer
 import eu.darken.sdmse.automation.core.specs.AutomationSpec
-import eu.darken.sdmse.automation.core.specs.ExplorerSpecGenerator
-import eu.darken.sdmse.automation.core.specs.SpecGenerator
-import eu.darken.sdmse.common.DeviceDetective
-import eu.darken.sdmse.common.ca.toCaString
 import eu.darken.sdmse.common.datastore.value
 import eu.darken.sdmse.common.debug.logging.Logging.Priority.INFO
 import eu.darken.sdmse.common.debug.logging.Logging.Priority.VERBOSE
 import eu.darken.sdmse.common.debug.logging.log
 import eu.darken.sdmse.common.debug.logging.logTag
+import eu.darken.sdmse.common.device.DeviceDetective
+import eu.darken.sdmse.common.device.RomType
 import eu.darken.sdmse.common.funnel.IPCFunnel
 import eu.darken.sdmse.common.hasApiLevel
 import eu.darken.sdmse.common.pkgs.PkgRepo
@@ -52,15 +50,13 @@ class ColorOSSpecs @Inject constructor(
     private val colorOSLabels: ColorOSLabels,
     private val settings: AppCleanerSettings,
     private val onTheFlyLabler: OnTheFlyLabler,
-) : ExplorerSpecGenerator() {
-
-    override val label = TAG.toCaString()
+) : AppCleanerSpecGenerator {
 
     override val tag: String = TAG
 
     // https://github.com/d4rken/sdmaid-public/issues/2910
     override suspend fun isResponsible(pkg: Installed): Boolean {
-        if (settings.romTypeDetection.value() == SpecRomType.COLOROS) return true
+        if (settings.romTypeDetection.value() == RomType.COLOROS) return true
         if (deviceDetective.isCustomROM()) return false
         if (!deviceDetective.isOppo()) return false
         return hasApiLevel(26) && hasColorApps()
@@ -72,7 +68,7 @@ class ColorOSSpecs @Inject constructor(
         "com.coloros.filemanager"
     ).any { pkgRepo.isInstalled(it.toPkgId()) }
 
-    override suspend fun getSpec(pkg: Installed): AutomationSpec = object : AutomationSpec.Explorer {
+    override suspend fun getClearCache(pkg: Installed): AutomationSpec = object : AutomationSpec.Explorer {
         override suspend fun createPlan(): suspend AutomationExplorer.Context.() -> Unit = {
             mainPlan(pkg)
         }
@@ -153,7 +149,7 @@ class ColorOSSpecs @Inject constructor(
 
     @Module @InstallIn(SingletonComponent::class)
     abstract class DIM {
-        @Binds @IntoSet abstract fun mod(mod: ColorOSSpecs): SpecGenerator
+        @Binds @IntoSet abstract fun mod(mod: ColorOSSpecs): AppCleanerSpecGenerator
     }
 
     companion object {

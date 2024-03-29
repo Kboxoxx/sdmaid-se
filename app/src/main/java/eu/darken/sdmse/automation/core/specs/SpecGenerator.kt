@@ -10,11 +10,10 @@ import eu.darken.sdmse.common.pkgs.Pkg
 import eu.darken.sdmse.common.pkgs.features.Installed
 
 interface SpecGenerator {
-    val label: CaString
+
+    val tag: String
 
     suspend fun isResponsible(pkg: Installed): Boolean
-
-    suspend fun getSpec(pkg: Installed): AutomationSpec
 
     fun Context.get3rdPartyString(pkgId: Pkg.Id, stringIdName: String): String? = try {
         val appResources = packageManager.getResourcesForApplication(pkgId.name)

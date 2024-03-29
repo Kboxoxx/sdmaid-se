@@ -14,7 +14,7 @@ import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import eu.darken.sdmse.common.BuildConfigWrap
-import eu.darken.sdmse.common.DeviceDetective
+import eu.darken.sdmse.common.device.DeviceDetective
 import kotlin.reflect.full.isSubclassOf
 
 
@@ -37,7 +37,10 @@ sealed class Permission(
             return pwm.isIgnoringBatteryOptimizations(BuildConfigWrap.APPLICATION_ID)
         }
 
-        override fun createIntent(context: Context, deviceDetective: DeviceDetective): Intent = Intent().apply {
+        override fun createIntent(
+            context: Context,
+            deviceDetective: eu.darken.sdmse.common.device.DeviceDetective
+        ): Intent = Intent().apply {
             action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
             data = Uri.fromParts("package", context.packageName, null)
         }
@@ -54,7 +57,10 @@ sealed class Permission(
             return Environment.isExternalStorageManager()
         }
 
-        override fun createIntent(context: Context, deviceDetective: DeviceDetective): Intent = Intent().apply {
+        override fun createIntent(
+            context: Context,
+            deviceDetective: eu.darken.sdmse.common.device.DeviceDetective
+        ): Intent = Intent().apply {
             action = Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
             data = Uri.fromParts("package", context.packageName, null)
         }
@@ -83,7 +89,10 @@ sealed class Permission(
             return mode == AppOpsManager.MODE_ALLOWED
         }
 
-        override fun createIntent(context: Context, deviceDetective: DeviceDetective): Intent {
+        override fun createIntent(
+            context: Context,
+            deviceDetective: eu.darken.sdmse.common.device.DeviceDetective
+        ): Intent {
             val defaultIntent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
             return when {
                 defaultIntent.resolveActivities(context).isNotEmpty() -> return defaultIntent
@@ -121,6 +130,6 @@ sealed class Permission(
 interface RuntimePermission
 
 interface Specialpermission {
-    fun createIntent(context: Context, deviceDetective: DeviceDetective): Intent
+    fun createIntent(context: Context, deviceDetective: eu.darken.sdmse.common.device.DeviceDetective): Intent
     fun createIntentFallback(context: Context): Intent? = null
 }

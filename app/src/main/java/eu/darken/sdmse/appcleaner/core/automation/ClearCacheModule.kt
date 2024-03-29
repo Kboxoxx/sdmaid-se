@@ -181,7 +181,7 @@ class ClearCacheModule @AssistedInject constructor(
         log(TAG) { "Using spec generator: $specGenerator" }
 
 
-        val spec = specGenerator.getSpec(pkg)
+        val spec = specGenerator.getClearCache(pkg)
         log(TAG) { "Generated spec for ${pkg.id} is $spec" }
 
         when (spec) {

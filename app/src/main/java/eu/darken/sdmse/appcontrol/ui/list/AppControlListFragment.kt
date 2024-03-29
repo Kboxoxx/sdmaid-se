@@ -189,6 +189,12 @@ class AppControlListFragment : Fragment3(R.layout.appcontrol_list_fragment) {
                         true
                     }
 
+                    R.id.action_forcestop_selection -> {
+                        vm.forceStop(selected)
+                        tracker.clearSelection()
+                        true
+                    }
+
                     else -> false
                 }
             }
@@ -358,6 +364,18 @@ class AppControlListFragment : Fragment3(R.layout.appcontrol_list_fragment) {
                     )
                     Snackbar.make(requireView(), "$msgSuccessful, $msgFailed", Snackbar.LENGTH_SHORT).show()
                 }
+
+                is AppControlListEvents.ConfirmForceStop -> MaterialAlertDialogBuilder(requireContext()).apply {
+                    setTitle(R.string.appcontrol_force_stop_confirm_title)
+                    setMessage(
+                        getQuantityString2(R.plurals.appcontrol_force_stop_confirmation_message_x, event.items.size)
+                    )
+                    setPositiveButton(R.string.appcontrol_force_stop_action) { _, _ ->
+                        vm.forceStop(event.items, confirmed = true)
+                        tracker.clearSelection()
+                    }
+                    setNeutralButton(eu.darken.sdmse.common.R.string.general_cancel_action) { _, _ -> }
+                }.show()
             }
         }
 

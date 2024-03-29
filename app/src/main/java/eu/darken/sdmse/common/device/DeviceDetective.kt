@@ -1,4 +1,4 @@
-package eu.darken.sdmse.common
+package eu.darken.sdmse.common.device
 
 import android.app.UiModeManager
 import android.content.Context
@@ -7,11 +7,18 @@ import android.content.res.Configuration
 import android.os.Build
 import dagger.Reusable
 import dagger.hilt.android.qualifiers.ApplicationContext
+import eu.darken.sdmse.common.datastore.value
+import eu.darken.sdmse.common.debug.logging.Logging.Priority.INFO
+import eu.darken.sdmse.common.debug.logging.log
+import eu.darken.sdmse.common.debug.logging.logTag
+import eu.darken.sdmse.common.isInstalled
+import eu.darken.sdmse.main.core.GeneralSettings
 import javax.inject.Inject
 
 @Reusable
 class DeviceDetective @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val settings: GeneralSettings,
 ) {
 
     fun isAndroidTV(): Boolean {
@@ -63,7 +70,34 @@ class DeviceDetective @Inject constructor(
 
     suspend fun isCustomROM() = isLineageROM()
 
+    suspend fun getROMType(): RomType {
+        val detectionType = settings.romTypeDetection.value()
+        if (detectionType != RomType.AUTO) {
+            log(TAG, INFO) { "ROM type override: $detectionType" }
+            return detectionType
+        }
+
+        return when {
+            isAlcatel() -> RomType.ALCATEL
+            true -> RomType.ANDROID_TV
+            true -> RomType.AOSP
+            true -> RomType.COLOROS
+            true -> RomType.FLYME
+            true -> RomType.HUAWEI
+            true -> RomType.LGE
+            true -> RomType.MIUI
+            true -> RomType.NUBIA
+            true -> RomType.ONEPLUS
+            true -> RomType.REALME
+            true -> RomType.SAMSUNG
+            true -> RomType.VIVO
+            true -> RomType.HONOR
+            else -> RomType.AOSP
+        }
+    }
+
     companion object {
+        private val TAG = logTag("DeviceDetective")
         private val LINEAGE_PKGS = setOf(
             "org.lineageos.lineagesettings",
             "lineageos.platform",
